@@ -27,19 +27,20 @@ namespace PdmMigration
 
         public static void LoadConfig()
         {
-            catalogFile = System.Configuration.ConfigurationManager.AppSettings["catalogFile"];
-            inputFile = System.Configuration.ConfigurationManager.AppSettings["inputFile"];
-            batchFile = System.Configuration.ConfigurationManager.AppSettings["batchFile"];
-            serverName = System.Configuration.ConfigurationManager.AppSettings["serverName"];
-            outputFile = System.Configuration.ConfigurationManager.AppSettings["outputFile"];
-            misfitToys = System.Configuration.ConfigurationManager.AppSettings["misfitToys"];
-            jobTicketLocation = System.Configuration.ConfigurationManager.AppSettings["jobTicketLocation"];
-            uncRawPrefix = System.Configuration.ConfigurationManager.AppSettings["uncRawPrefix"];
-            uncPdfPrefix = System.Configuration.ConfigurationManager.AppSettings["uncPdfPrefix"];
-            recentDateTime = DateTime.Parse(System.Configuration.ConfigurationManager.AppSettings["recentDateTime"]);
-            isWindows = Convert.ToBoolean(System.Configuration.ConfigurationManager.AppSettings["isWindows"]);
-            isLuDateTime = Convert.ToBoolean(System.Configuration.ConfigurationManager.AppSettings["isLuDateTime"]);
-            isIeDateTime = Convert.ToBoolean(System.Configuration.ConfigurationManager.AppSettings["isIeDateTime"]);
+            catalogFile = ConfigurationManager.AppSettings["catalogFile"];
+            inputFile = ConfigurationManager.AppSettings["inputFile"];
+            batchFile = ConfigurationManager.AppSettings["batchFile"];
+            serverName = ConfigurationManager.AppSettings["serverName"];
+            outputFile = ConfigurationManager.AppSettings["outputFile"];
+            misfitToys = ConfigurationManager.AppSettings["misfitToys"];
+            jobTicketLocation = ConfigurationManager.AppSettings["jobTicketLocation"];
+            uncRawPrefix = ConfigurationManager.AppSettings["uncRawPrefix"];
+            uncPdfPrefix = ConfigurationManager.AppSettings["uncPdfPrefix"];
+            adlibDTD = ConfigurationManager.AppSettings["adlibDTD"];
+            recentDateTime = DateTime.Parse(ConfigurationManager.AppSettings["recentDateTime"]);
+            isWindows = Convert.ToBoolean(ConfigurationManager.AppSettings["isWindows"]);
+            isLuDateTime = Convert.ToBoolean(ConfigurationManager.AppSettings["isLuDateTime"]);
+            isIeDateTime = Convert.ToBoolean(ConfigurationManager.AppSettings["isIeDateTime"]);
 
             Console.WriteLine(catalogFile);
             Console.WriteLine(inputFile);
@@ -205,7 +206,14 @@ namespace PdmMigration
 
                     if (File.Exists(sourcePdfBuilder.ToString()))
                     {
-                        batchLines.Add("Copy " + sourcePdfBuilder.ToString() + " " + uncPdfPrefix + "\\" + kvp.Key + ".pdf");
+                        if(sourcePdfBuilder.ToString().Contains(" "))
+                        {
+                            batchLines.Add("Copy \"" + sourcePdfBuilder.ToString() + "\" " + uncPdfPrefix + "\\" + kvp.Key + ".pdf");
+                        }
+                        else
+                        {
+                            batchLines.Add("Copy " + sourcePdfBuilder.ToString() + " " + uncPdfPrefix + "\\" + kvp.Key + ".pdf");
+                        }
                         continue;
                     }
                     else
@@ -234,23 +242,25 @@ namespace PdmMigration
                     }
                 }
 
-                foreach (var i in kvp.Value)
+                var orderedItemShtNums = kvp.Value.OrderBy(x => x.ItemShtNum);
+
+                foreach (var i in orderedItemShtNums)
                 {
                     string filename = i.FileName;
 
-                    if (i.FileName.EndsWith(".Z") || i.FileName.EndsWith("._"))
+                    if (filename.EndsWith(".Z") || filename.EndsWith("._"))
                     {
-                        filename = i.FileName.Remove(i.FileName.Length - 2, 2);
+                        filename = filename.Remove(filename.Length - 2, 2);
                     }
 
-                    if (i.FileName.EndsWith(".pra"))
+                    if (filename.EndsWith(".pra"))
                     {
                         filename += ".plt";
                     }
 
                     if (i.PdfAble)
                     {
-                        if (i.FileDateTime == mostRecentDate)
+                        if (i.FileDateTime.Date == mostRecentDate)
                         {
                             jobTicket.AppendLine("<JOB:DOCINPUT FILENAME=\"" + filename + "\" FOLDER=\"" + uncRawPrefix + i.FilePath.Replace("/", "\\") + "\"/>");
                         }

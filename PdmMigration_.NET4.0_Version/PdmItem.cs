@@ -17,6 +17,7 @@ namespace PdmMigration
         public string ItemRev { get; set; }
         public string ItemExt { get; set; }
         public string ItemSht { get; set; }
+        public int ItemShtNum { get; set; }
         public bool HasRev { get; set; }
         public bool HasSht { get; set; }
         public bool HasExt { get; set; }
@@ -110,6 +111,7 @@ namespace PdmMigration
                     {
                         HasSht = true;
                         ItemSht = dataFileSplit[2];
+                        ItemShtNum = ExtractNumSht(ItemSht);
                     }
                     else
                     {
@@ -143,6 +145,13 @@ namespace PdmMigration
                 List<string> linuxData = line.Split(' ').ToList();
                 linuxData.RemoveAll(String.IsNullOrEmpty);
                 linuxData.RemoveRange(0, 4);
+
+                //if there was whitespace in filename, join back together, remove last item in array
+                if (linuxData.Count == 6)
+                {
+                    linuxData[4] = String.Join(" ", linuxData[4], linuxData[5]);
+                    linuxData.Remove(linuxData[5]);
+                }
 
                 FileSize = Convert.ToInt64(linuxData[0]);
                 FileMonth = linuxData[1];
@@ -205,6 +214,7 @@ namespace PdmMigration
                     {
                         HasSht = true;
                         ItemSht = linuxDataFileSplit[2];
+                        ItemShtNum = ExtractNumSht(ItemSht);
                     }
                     else
                     {
@@ -231,6 +241,21 @@ namespace PdmMigration
                     IsMisfit = true;
                 }
             }
+        }
+
+        public int ExtractNumSht(string itemSht)
+        {
+            StringBuilder sheetbuilder = new StringBuilder();
+
+            foreach (char i in itemSht)
+            {
+                if (i >= '0' && i <= '9')
+                {
+                    sheetbuilder.Append(i);
+                }
+            }
+
+            return Int32.Parse(sheetbuilder.ToString());
         }
 
         public string GetOutputLine()
