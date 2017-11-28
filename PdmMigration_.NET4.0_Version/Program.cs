@@ -24,6 +24,7 @@ namespace PdmMigration
         public static bool isWindows = false;
         public static bool isLuDateTime = false;
         public static bool isIeDateTime = false;
+        public static bool isSLC = false;
 
         public static void LoadConfig()
         {
@@ -41,6 +42,7 @@ namespace PdmMigration
             isWindows = Convert.ToBoolean(ConfigurationManager.AppSettings["isWindows"]);
             isLuDateTime = Convert.ToBoolean(ConfigurationManager.AppSettings["isLuDateTime"]);
             isIeDateTime = Convert.ToBoolean(ConfigurationManager.AppSettings["isIeDateTime"]);
+            isSLC = Convert.ToBoolean(ConfigurationManager.AppSettings["isSLC"]);
 
             Console.WriteLine(catalogFile);
             Console.WriteLine(inputFile);
@@ -55,6 +57,7 @@ namespace PdmMigration
             Console.WriteLine(isWindows);
             Console.WriteLine(isLuDateTime);
             Console.WriteLine(isIeDateTime);
+            Console.WriteLine(isSLC);
         }
 
         public static bool IsExt(string token)
@@ -262,7 +265,14 @@ namespace PdmMigration
                     {
                         if (i.FileDateTime.Date == mostRecentDate)
                         {
-                            jobTicket.AppendLine("<JOB:DOCINPUT FILENAME=\"" + filename + "\" FOLDER=\"" + uncRawPrefix + i.FilePath.Replace("/", "\\") + "\"/>");
+                            if (Program.isSLC)
+                            {
+                                jobTicket.AppendLine("<JOB:DOCINPUT FILENAME=\"" + filename + "\" FOLDER=\"" + uncRawPrefix + i.FilePath.Remove(0, 10) + "\"/>");
+                            }
+                            else
+                            {
+                                jobTicket.AppendLine("<JOB:DOCINPUT FILENAME=\"" + filename + "\" FOLDER=\"" + uncRawPrefix + i.FilePath.Replace("/", "\\") + "\"/>");
+                            }
                         }
                         else
                         {

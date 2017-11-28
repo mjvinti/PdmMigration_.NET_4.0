@@ -71,7 +71,16 @@ namespace PdmMigration
                 }
 
                 int idx = FilePathName.LastIndexOf('\\');
-                FilePath = FilePathName.Substring(0, idx + 1);
+
+                if(Program.isSLC)
+                {
+                    FilePath = FilePathName.Substring(0, idx + 1);
+                }
+                else
+                {
+                    FilePath = FilePathName.Substring(2, idx - 1);
+                }
+
                 FileName = FilePathName.Substring(idx + 1);
 
                 PdfAbleFileName = FileName;
