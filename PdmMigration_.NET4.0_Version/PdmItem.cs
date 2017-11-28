@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 
@@ -55,12 +56,12 @@ namespace PdmMigration
 
                 if (Program.isLuDateTime)
                 {
-                    FileDateTime = DateTime.ParseExact(windowsData[1] + ' ' + windowsData[2], "dd.MM.yyyy HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
+                    FileDateTime = DateTime.ParseExact(windowsData[1] + ' ' + windowsData[2], "dd.MM.yyyy HH:mm:ss", CultureInfo.CreateSpecificCulture("en-US"));
                     FilePathName = windowsData[3];
                 }
                 else if (Program.isIeDateTime)
                 {
-                    FileDateTime = DateTime.ParseExact(windowsData[1] + ' ' + windowsData[2], "dd/MM/yyyy HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
+                    FileDateTime = DateTime.ParseExact(windowsData[1] + ' ' + windowsData[2], "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture);
                     FilePathName = windowsData[3];
                 }
                 else
@@ -70,7 +71,7 @@ namespace PdmMigration
                 }
 
                 int idx = FilePathName.LastIndexOf('\\');
-                FilePath = FilePathName.Substring(2, idx + 1);
+                FilePath = FilePathName.Substring(0, idx + 1);
                 FileName = FilePathName.Substring(idx + 1);
 
                 PdfAbleFileName = FileName;
@@ -215,6 +216,7 @@ namespace PdmMigration
                         HasSht = true;
                         ItemSht = linuxDataFileSplit[2];
                         ItemShtNum = ExtractNumSht(ItemSht);
+
                     }
                     else
                     {
@@ -245,6 +247,11 @@ namespace PdmMigration
 
         public int ExtractNumSht(string itemSht)
         {
+            if(!itemSht.Any(c => char.IsDigit(c)))
+            {
+                return 0;
+            }
+
             StringBuilder sheetbuilder = new StringBuilder();
 
             foreach (char i in itemSht)
